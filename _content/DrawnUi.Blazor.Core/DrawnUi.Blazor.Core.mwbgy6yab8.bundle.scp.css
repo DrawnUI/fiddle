@@ -1,0 +1,63 @@
+/* _content/DrawnUi.Blazor.Core/Views/AspectLockedViewportHost.razor.rz.scp.css */
+.aspect-locked-host[b-bohjic856w] {
+    position: relative;
+    display: block;
+    max-width: 100%;
+    margin: var(--host-margin, 16px auto 32px);
+    background: var(--host-background, #000000);
+    overflow: hidden;
+    aspect-ratio: var(--host-aspect, 1 / 1);
+}
+
+.aspect-locked-host.fit-width[b-bohjic856w] {
+    width: 100%;
+}
+
+.aspect-locked-host.fit-height[b-bohjic856w] {
+    width: min(100%, calc((100vh - var(--host-viewport-offset, 0px)) * var(--host-aspect-ratio, 1)));
+    height: auto;
+    max-width: 100%;
+    max-height: calc(100vh - var(--host-viewport-offset, 0px));
+}
+
+.aspect-locked-host.fullscreen[b-bohjic856w] {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    z-index: var(--host-z-index, 2000);
+    aspect-ratio: auto;
+}
+/* _content/DrawnUi.Blazor.Core/Views/Entry.razor.rz.scp.css */
+/*EDITOR ENTRY*/
+
+.xaml-entry-input[b-du4rua9ub4] {
+    width: 100%;
+    padding: 0 22px 5px;
+    border: none;
+    border-bottom: 1px solid var(--color-text-gray);
+    background: none;
+}
+
+.xaml-entry-input[b-du4rua9ub4],
+.xaml-entry-input[b-du4rua9ub4]::placeholder {
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--color-text);
+}
+
+.xaml-entry-input:focus[b-du4rua9ub4] {
+    outline: none;
+}
+
+.xaml-entry-input-container[b-du4rua9ub4]:before {
+    display: block;
+    content: ' ';
+    transform: translateY(16px);
+    background-image: url('././svg/pencil.svg');
+    background-size: cover;
+    background-position: center center;
+    height: 11px;
+    width: 11px;
+}

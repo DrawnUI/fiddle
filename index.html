@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DrawnUI Fiddle</title>
+
+    <meta name="description" content="DrawnUI Fiddle powered by SkiaSharp running in your browser.">
+    <meta name="theme-color" content="#0A0F1E">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="_content/DrawnUi.Fiddle/favicon.svg">
+    <link rel="icon" type="image/png" href="_content/DrawnUi.Fiddle/favicon.png">
+    <link rel="apple-touch-icon" href="_content/DrawnUi.Fiddle/apple-icon.png">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fiddle.drawnui.net/">
+    <meta property="og:site_name" content="DrawnUI Fiddle">
+    <meta property="og:title" content="DrawnUI Fiddle">
+    <meta property="og:description" content="DrawnUI Fiddle powered by SkiaSharp running in your browser. Edit C# and compile live to render with Skia.">
+    <meta property="og:image" content="https://fiddle.drawnui.net/x.jpg">
+    <meta property="og:image:width" content="600">
+    <meta property="og:image:height" content="400">
+    <meta property="og:image:alt" content="DrawnUI Fiddle">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://fiddle.drawnui.net/">
+    <meta name="twitter:title" content="DrawnUI Fiddle">
+    <meta name="twitter:description" content="DrawnUI Fiddle powered by SkiaSharp running in your browser. Edit C# and compile live to render with Skia.">
+    <meta name="twitter:image" content="https://fiddle.drawnui.net/x.jpg">
+    <meta name="twitter:image:alt" content="DrawnUI Fiddle">
+
+    <base href="/" />
+    <!-- Single Page Apps for GitHub Pages — restores the path stashed by 404.html
+         (rafrex/spa-github-pages, MIT). No-op unless arriving via a deep-link 404. -->
+    <script type="text/javascript">
+        (function (l) {
+            if (l.search) {
+                var q = {};
+                l.search.slice(1).split('&').forEach(function (v) {
+                    var a = v.split('=');
+                    q[a[0]] = a.slice(1).join('=').replace(/~and~/g, '&');
+                });
+                if (q.p !== undefined) {
+                    window.history.replaceState(null, null,
+                        l.pathname.slice(0, -1) + (q.p || '') +
+                        (q.q ? ('?' + q.q) : '') +
+                        l.hash
+                    );
+                }
+            }
+        }(window.location))
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --fx-bg: #05070d;
+            --fx-cyan: #22d3ee;
+            --fx-violet: #a855f7;
+            --fx-pink: #ec4899;
+            --fx-text: #e6edf6;
+            --fx-dim: #8b98ab;
+            --fx-panel: rgba(13, 18, 30, 0.72);
+            --fx-border: rgba(103, 232, 249, 0.18);
+        }
+
+        html, body, #app {
+            min-height: 100%;
+            margin: 0;
+        }
+        /* form controls don't inherit font by default */
+        button, input, select, textarea {
+            font-family: inherit;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Exo 2", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--fx-bg);
+            color: var(--fx-text);
+            overflow-x: hidden;
+        }
+
+        /* ── Animated deep-space backdrop ─────────────────────────────── */
+        .fx-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: radial-gradient(1200px 700px at 80% -10%, rgba(168, 85, 247, 0.16), transparent 60%), radial-gradient(1000px 600px at -10% 30%, rgba(34, 211, 238, 0.12), transparent 60%), radial-gradient(900px 700px at 60% 110%, rgba(236, 72, 153, 0.10), transparent 60%), var(--fx-bg);
+        }
+
+        /* Soft glow via radial-gradient, NOT filter:blur. A blur() filter is its own GPU
+           layer; three 90px-blur blobs starved the WebGL canvas layer and the browser
+           dropped canvas frames at random → the idle "blink". A gradient fading to
+           transparent gives the same soft look for free (no filter layer). */
+        .fx-blob {
+            position: absolute;
+            width: 44vw;
+            height: 44vw;
+            border-radius: 50%;
+            opacity: 0.5;
+            will-change: transform;
+        }
+
+        .fx-blob-a {
+            background: radial-gradient(circle, #164e63 0%, transparent 68%);
+            top: -18vw;
+            right: -10vw;
+            animation: fx-float-a 26s ease-in-out infinite alternate;
+        }
+
+        .fx-blob-b {
+            background: radial-gradient(circle, #3b0764 0%, transparent 68%);
+            bottom: -20vw;
+            left: -12vw;
+            animation: fx-float-b 32s ease-in-out infinite alternate;
+        }
+
+        .fx-blob-c {
+            background: radial-gradient(circle, #500724 0%, transparent 68%);
+            top: 30%;
+            left: 55%;
+            width: 28vw;
+            height: 28vw;
+            animation: fx-float-c 22s ease-in-out infinite alternate;
+        }
+
+        /* translate-only drift: the layer just moves (cheap compositor op). scale() was
+           re-blurring the 90px-blur blob every frame → starved the canvas GL layer → blink. */
+        @keyframes fx-float-a {
+            to {
+                transform: translate(-8vw, 10vh);
+            }
+        }
+
+        @keyframes fx-float-b {
+            to {
+                transform: translate(10vw, -8vh);
+            }
+        }
+
+        @keyframes fx-float-c {
+            to {
+                transform: translate(-12vw, -10vh);
+            }
+        }
+
+        .fx-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(rgba(103, 232, 249, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(103, 232, 249, 0.05) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: radial-gradient(75% 60% at 50% 30%, #000 0%, transparent 100%);
+            -webkit-mask-image: radial-gradient(75% 60% at 50% 30%, #000 0%, transparent 100%);
+        }
+
+        /* ── Header ───────────────────────────────────────────────────── */
+        .fx-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            background: rgba(5, 7, 13, 0.65);
+            border-bottom: 1px solid var(--fx-border);
+        }
+
+        .fx-header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .fx-logo {
+            font-size: 22px;
+            font-weight: 800;
+            font-style: italic;
+            letter-spacing: 0.02em;
+            color: var(--fx-text);
+            text-decoration: none;
+            text-shadow: 0 0 18px rgba(103, 232, 249, 0.35);
+        }
+
+            .fx-logo b {
+                font-weight: 800;
+                background: linear-gradient(92deg, var(--fx-cyan), var(--fx-violet) 55%, var(--fx-pink));
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+            }
+
+        .fx-tag {
+            font-size: 13px;
+            color: var(--fx-dim);
+        }
+
+        .fx-site {
+            margin-left: auto;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: #67e8f9;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(103, 232, 249, 0.35);
+            transition: border-color 0.15s, text-shadow 0.15s;
+        }
+
+            .fx-site:hover {
+                border-color: #67e8f9;
+                text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+            }
+
+        .fx-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            color: #67e8f9;
+            border: 1px solid rgba(103, 232, 249, 0.35);
+            border-radius: 999px;
+            padding: 4px 12px;
+        }
+
+        .fx-live-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22d3ee;
+            box-shadow: 0 0 8px 2px rgba(34, 211, 238, 0.8);
+            animation: fx-pulse 1.6s ease-in-out infinite;
+        }
+
+        @keyframes fx-pulse {
+            50% {
+                opacity: 0.35;
+            }
+        }
+
+        /* ── Help button + popup ──────────────────────────────────────── */
+        .fx-help-btn {
+            cursor: pointer;
+            background: none;
+            padding: 0;
+            border: 0;
+            border-bottom: 1px solid rgba(103, 232, 249, 0.35);
+        }
+
+        .fx-help-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(3, 5, 10, 0.72);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            animation: fx-help-fade 0.18s ease-out;
+        }
+
+        @keyframes fx-help-fade {
+            from { opacity: 0; }
+        }
+
+        .fx-help-card {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 34px 32px 26px;
+            border-radius: 18px;
+            border: 1px solid var(--fx-border);
+            background: linear-gradient(160deg, rgba(18, 22, 34, 0.96), rgba(9, 11, 18, 0.96));
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(103, 232, 249, 0.08);
+            text-align: center;
+            animation: fx-help-pop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+        }
+
+        @keyframes fx-help-pop {
+            from { transform: translateY(10px) scale(0.97); opacity: 0; }
+        }
+
+        .fx-help-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--fx-border);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--fx-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            cursor: pointer;
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+            .fx-help-close:hover {
+                color: var(--fx-text);
+                border-color: #67e8f9;
+            }
+
+        .fx-help-logo {
+            width: 96px;
+            height: 96px;
+            margin: 0 auto 6px;
+            filter: drop-shadow(0 0 20px rgba(103, 232, 249, 0.25));
+        }
+
+        .fx-help-title {
+            margin: 0 0 14px;
+            font-size: 24px;
+            font-weight: 800;
+            font-style: italic;
+            color: var(--fx-text);
+        }
+
+            .fx-help-title b {
+                background: linear-gradient(92deg, var(--fx-cyan), var(--fx-violet) 55%, var(--fx-pink));
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+            }
+
+        .fx-help-lead {
+            margin: 0 0 18px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--fx-dim);
+        }
+
+            .fx-help-lead a,
+            .fx-help-credit a {
+                color: #67e8f9;
+                text-decoration: none;
+                border-bottom: 1px solid rgba(103, 232, 249, 0.35);
+            }
+
+                .fx-help-lead a:hover,
+                .fx-help-credit a:hover {
+                    border-color: #67e8f9;
+                }
+
+        .fx-help-tips {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 0 0 20px;
+            text-align: left;
+        }
+
+        .fx-help-tip {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--fx-dim);
+            padding: 9px 13px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--fx-border);
+        }
+
+            .fx-help-tip b {
+                color: var(--fx-text);
+            }
+
+        .fx-help-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 0 0 22px;
+        }
+
+            .fx-help-links a {
+                font-size: 13px;
+                font-weight: 600;
+                letter-spacing: 0.03em;
+                color: #67e8f9;
+                text-decoration: none;
+                padding: 8px 16px;
+                border-radius: 999px;
+                border: 1px solid rgba(103, 232, 249, 0.35);
+                transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+            }
+
+                .fx-help-links a:hover {
+                    border-color: #67e8f9;
+                    background: rgba(103, 232, 249, 0.08);
+                    box-shadow: 0 0 12px rgba(34, 211, 238, 0.35);
+                }
+
+        .fx-help-discuss {
+            margin: 0 0 18px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(168, 85, 247, 0.28);
+            background: rgba(168, 85, 247, 0.06);
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--fx-dim);
+        }
+
+            .fx-help-discuss a {
+                color: #c99bff;
+                text-decoration: none;
+                border-bottom: 1px solid rgba(168, 85, 247, 0.4);
+            }
+
+                .fx-help-discuss a:hover {
+                    border-color: #c99bff;
+                }
+
+        .fx-help-credit {
+            font-size: 11px;
+            letter-spacing: 0.02em;
+            color: var(--fx-dim);
+            opacity: 0.75;
+        }
+
+        .fx-help-heart {
+            animation: fx-pulse 1.4s ease-in-out infinite;
+            display: inline-block;
+        }
+
+        .fiddle-app-main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 10px 20px 40px;
+        }
+
+        /* ── Re-skin the fiddle page (RCL) to dark glass ──────────────── */
+        body .docs-page h1 {
+            display: none; /* header replaces it */
+        }
+
+        body .docs-page p {
+            color: var(--fx-dim);
+        }
+
+            body .docs-page p code, body .docs-page p strong {
+                color: #b7e3f7;
+            }
+
+        body .fiddle-presets button {
+            border: 1px solid rgba(139, 152, 171, 0.28);
+            background: rgba(13, 18, 30, 0.7);
+            color: var(--fx-text);
+            transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+        }
+
+            body .fiddle-presets button:hover {
+                border-color: rgba(103, 232, 249, 0.65);
+                box-shadow: 0 0 14px rgba(34, 211, 238, 0.25);
+                transform: translateY(-1px);
+            }
+
+            /* Selected = the stroke without the lift/scale — even while hovered. */
+            body .fiddle-presets button.selected,
+            body .fiddle-presets button.selected:hover {
+                border-color: rgba(168, 85, 247, 0.65);
+                box-shadow: 0 0 14px rgba(168, 85, 247, 0.3);
+                transform: none;
+            }
+
+        body .fiddle-split {
+            border: 1px solid var(--fx-border);
+            box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.08), 0 18px 60px rgba(0, 0, 0, 0.55), 0 0 42px rgba(34, 211, 238, 0.07);
+        }
+
+        body .fiddle-divider {
+            background: #1b2637;
+        }
+
+            body .fiddle-divider:hover, body .fiddle-divider.dragging {
+                background: #2b3d57;
+            }
+
+        body .fiddle-divider-h {
+            background: #1b2637;
+        }
+
+            body .fiddle-divider-h:hover, body .fiddle-divider-h.dragging {
+                background: #2b3d57;
+            }
+
+        body .fiddle-intelli {
+            color: var(--fx-dim);
+        }
+
+        body .fiddle-status {
+            color: var(--fx-dim);
+        }
+
+        body .fiddle-copy {
+            border: 1px solid rgba(139, 152, 171, 0.28);
+            background: rgba(13, 18, 30, 0.7);
+            color: var(--fx-text);
+        }
+
+            body .fiddle-copy:hover {
+                border-color: rgba(103, 232, 249, 0.65);
+                background: rgba(13, 18, 30, 0.9);
+            }
+
+        body .fiddle-run {
+            background: linear-gradient(92deg, #0891b2, #7c3aed);
+            box-shadow: 0 0 18px rgba(124, 58, 237, 0.35);
+        }
+
+        #blazor-error-ui {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 16px;
+            background: #b32121;
+            color: #fff;
+            z-index: 1000;
+        }
+
+        /* Boot placeholder */
+        .fx-boot {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 18px;
+            color: var(--fx-dim);
+            letter-spacing: 0.12em;
+            font-size: 13px;
+        }
+
+        .fx-boot-ring {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid rgba(103, 232, 249, 0.18);
+            border-top-color: #22d3ee;
+            animation: fx-spin 0.9s linear infinite;
+        }
+
+        @keyframes fx-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="fx-boot">
+            <div class="fx-boot-ring"></div>
+            .NET LOADING
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+    </div>
+
+    <!-- Brotli boot: GitHub Pages doesn't serve .br/.gz for .dll/.wasm, so download
+         the precompressed .br assets and decompress client-side. Untrimmed fiddle
+         payload is large -> this is the difference between a ~few-MB and tens-of-MB
+         download. Skipped on localhost (dev serves compressed already). -->
+    <script src="decode.js?v=10"></script>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            loadBootResource: function (type, name, defaultUri, integrity) {
+                if (type !== 'dotnetjs' && location.hostname !== 'localhost') {
+                    // Cache-bust every boot resource so a new publish is never served stale
+                    // from browser or CDN (Cloudflare), WITHOUT renaming _framework files
+                    // (the in-browser Roslyn compiler fetches _framework/*.dll by plain name).
+                    // - assemblies/wasm carry an integrity hash -> content-addressed URL:
+                    //   same bytes reuse cache, changed bytes get a fresh URL automatically.
+                    // - blazor.boot.json has no integrity here -> per-load nonce so the tiny
+                    //   manifest is always fresh; its updated hashes then cascade to the DLLs.
+                    const bust = integrity
+                        ? '?v=' + integrity.replace(/[^a-zA-Z0-9]/g, '').slice(0, 16)
+                        : '?t=' + Date.now();
+                    return (async function () {
+                        const response = await fetch(defaultUri + '.br' + bust, { cache: 'no-cache' });
+                        if (!response.ok) throw new Error(response.statusText);
+                        const originalResponseArray = new Int8Array(await response.arrayBuffer());
+                        const decompressedResponseArray = BrotliDecode(originalResponseArray);
+                        const contentType = type === 'dotnetwasm' ? 'application/wasm' : 'application/octet-stream';
+                        return new Response(decompressedResponseArray, { headers: { 'content-type': contentType } });
+                    })();
+                }
+            }
+        });
+    </script>
+    <script>
+        // Player mode (#play={id}) renders canvas-only — no editor ever mounts, so skip
+        // ALL Monaco downloads (~4 MB: jsInterop + loader + editor.main). document.write
+        // keeps the original sync load order for the normal editor path.
+        window.fiddleIsPlayer = /#play=/.test(location.hash) || /\/p\/[A-Za-z0-9]{6,16}$/.test(location.pathname);
+        if (!window.fiddleIsPlayer) {
+            document.write('<scr' + 'ipt src="_content/BlazorMonaco/jsInterop.js?v=10"></scr' + 'ipt>');
+        }
+    </script>
+    <script>
+        // Monaco spawns its editor worker from a blob and resolves workerMain against
+        // the origin root, ignoring <base href>. Under a GitHub Pages subpath (/fiddle/)
+        // that 404s. Pin the worker + baseUrl to the absolute deployed base path.
+        // (document.baseURI == origin + "/" locally, so this is a no-op in dev.)
+        (function () {
+            var vs = new URL('_content/BlazorMonaco/lib/monaco-editor/min/vs/', document.baseURI).href;
+            window.MonacoEnvironment = {
+                getWorkerUrl: function () {
+                    var boot = "self.MonacoEnvironment={baseUrl:'" + vs + "'};importScripts('" + vs + "base/worker/workerMain.js');";
+                    return 'data:text/javascript;charset=utf-8,' + encodeURIComponent(boot);
+                }
+            };
+        })();
+    </script>
+    <script>
+        if (!window.fiddleIsPlayer) {
+            document.write('<scr' + 'ipt src="_content/BlazorMonaco/lib/monaco-editor/min/vs/loader.js?v=10"></scr' + 'ipt>');
+            document.write('<scr' + 'ipt>require.config({ paths: { vs: "_content/BlazorMonaco/lib/monaco-editor/min/vs" } });</scr' + 'ipt>');
+            document.write('<scr' + 'ipt src="_content/BlazorMonaco/lib/monaco-editor/min/vs/editor/editor.main.js?v=10"></scr' + 'ipt>');
+        }
+    </script>
+    <!-- Plain path, not the #[.{fingerprint}] placeholder form. That placeholder never
+         actually resolved for this cross-project RCL (_content/DrawnUi.Fiddle/...)
+         asset in Release either (verified: always collapsed to this exact plain
+         filename on disk and in served HTML) - Debug/dev-server never runs the
+         substitution step at all, so the literal placeholder text hit the SPA
+         fallback (index.html) and threw "Unexpected token '<'" trying to parse HTML
+         as JS. Plain name works identically in both. No staleness risk despite no
+         hash: this route's Cache-Control is no-cache in the endpoints manifest
+         (always revalidated), and Layer C (Cloudflare bypass on index.html) plus
+         Layer B (loadBootResource cache-bust) already cover republish freshness.
+         Do not reintroduce the placeholder here without also fixing the framework
+         script tag to match (importmap addition alone renames
+         _framework/blazor.webassembly.js on disk while its own tag stays literal ->
+         404 on the boot script, blank canvas - confirmed live, reverted). -->
+    <script src="_content/DrawnUi.Fiddle/fiddle-intellisense.js?v=10"></script>
+</body>
+
+</html>

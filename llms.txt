@@ -1,0 +1,24 @@
+# DrawnUI Fiddle
+
+> In-browser C# playground: code is compiled with Roslyn on WebAssembly and rendered live on a DrawnUI (SkiaSharp) canvas. Zero server. AI agents can drive it programmatically.
+
+## Skills (for AI Agents)
+
+- [Fiddle driving skill](https://fiddle.drawnui.net/skills/drawnui-fiddle/SKILL.md): window.fiddle API, snippet contract, screenshot rules, DOM test ids
+- [DrawnUI fluent C# skill](https://drawnui.net/skills/drawnui-fluent/SKILL.md): fluent code-behind composition patterns — the style fiddle snippets should use
+- [DrawnUI framework skill](https://drawnui.net/skills/drawnui/SKILL.md): controls, layouts, caching, gestures — deep framework guidance
+
+## Quickstart for agents
+
+Open https://fiddle.drawnui.net/ in a real browser (app is WebAssembly — plain HTTP fetch returns only the loader shell). Then:
+
+1. Poll `window.fiddle && (await fiddle.getState()).ready === true` (cold start 10-20s).
+2. `await fiddle.setCode(code)` — code is a C# method body that returns a SkiaControl. Never simulate keystrokes into the Monaco editor.
+3. `await fiddle.run()` -> { success, errors, status }; errors are "L<line>: message" in editor coordinates.
+4. `await fiddle.getConsole()` -> Console.WriteLine output lines.
+5. Canvas pixels: compositor element screenshot of [data-testid="fiddle-canvas"]. canvas.toDataURL() is always blank (WebGL, preserveDrawingBuffer:false) — do not use.
+6. Verifying success: run() returning { success: true } means compiled AND rendered to canvas. DOM cross-checks: [data-testid="fiddle-status"] shows "Compiled and rendered", [data-testid="fiddle-errors"] exists only when there are errors. Runtime behavior evidence: Console.WriteLine in your snippet -> getConsole().
+
+## Source
+
+- [DrawnUI](https://github.com/DrawnUi/DrawnUi.Net): the rendering engine
